@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* Firefox */
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    body {
+      background-color: #191919;
+      font-family: sans-serif;
+      height: 640px;
+    }
+
+    h2,
+    input,
+    p {
+      color: #d4d4d4;
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 100px;
+    }
+
+    .buttons {
+      width: fit-content;
+      margin: 0 auto;
+      display: grid;
+      gap: 24px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    button {
+      background-color: transparent;
+      border: 2px solid #d4d4d4;
+      color: #d4d4d4;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .calculator {
+      margin: 50px;
+    }
+
+    .calculator__input {
+      margin-bottom: 32px;
+      background-color: transparent;
+      width: 100%;
+      padding: 10px;
+      font-size: 18px;
+      border-radius: 8px;
+    }
+
+    .calculator__input:focus {
+      outline: none;
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Расчитай цену!</h2>
+
+  <div class="buttons">
+    <button onclick="changeMode('DISTANCE_KNOWN')">Знаю расстояние</button>
+    <button onclick="changeMode('CORDS_KNOWN')">Хочу ввести координаты</button>
+  </div>
+
+  <div class="calculator" id="calculator">
+    <div class="input-distance">
+      <p>Количество блоков</p>
+      <input
+        class="calculator__input"
+        id="input-blocks"
+        type="number"
+        placeholder="Расстояние в блоках"
+        onkeyup="refreshContent()"
+      >
+    </div>
+
+    <div class="inputs-cords">
+      <p>От какой точки (x y):</p>
+      <input
+        class="calculator__input"
+        id="input-from"
+        type="text"
+        placeholder="220 420"
+        onkeyup="refreshContent()"
+      >
+
+      <p>До какой точки (x y):</p>
+      <input
+        class="calculator__input"
+        id="input-to"
+        type="text"
+        placeholder="-120 2156"
+        onkeyup="refreshContent()"
+      >
+    </div>
+
+    <p>Количество сундуков</p>
+    <input
+      class="calculator__input"
+      id="input-chests"
+      type="number"
+      placeholder="Количество сундуков"
+      onkeyup="refreshContent()"
+    >
+
+    <p>Цена</p>
+    <input class="calculator__input" id="input-price" type="text" readonly placeholder="Тут цена">
+  </div>
+</body>
+
+<script>
+  const DISTANCE_KNOWN = 'DISTANCE_KNOWN';
+  const CORDS_KNOWN = 'CORDS_KNOWN';
+
+  // default state
+  const state = {
+    mode: DISTANCE_KNOWN,
+  }
+
+  renderCalculator();
+
+  function changeMode(mode) {
+    state.mode = mode;
+
+    renderCalculator();
+  }
+
+  function renderCalculator() {
+    const inputWithDistance = document.querySelector('.input-distance');
+    const inputsWithCords = document.querySelector('.inputs-cords');
+
+    document.querySelector('#input-from').value = '';
+    document.querySelector('#input-to').value = '';
+    document.querySelector('#input-chests').value = '';
+    document.querySelector('#input-blocks').value = '';
+    document.querySelector('#input-price').value = '0 железных самородков'
+
+    if (state.mode === DISTANCE_KNOWN) {
+      inputWithDistance.style.display = 'block';
+      inputsWithCords.style.display = 'none';
+    } else {
+      inputWithDistance.style.display = 'none';
+      inputsWithCords.style.display = 'block';
+    }
+  }
+
+  function calculateDistance(a_point, b_point) {
+    const x_difference = b_point.x - a_point.x;
+    const y_difference = b_point.y - a_point.y;
+    const distanceBetweenPoints = Math.sqrt(x_difference ** 2 + y_difference ** 2);
+
+    return Math.ceil(distanceBetweenPoints);
+  }
+
+  function createPoint(pointData) {
+    return {
+      x: pointData[0] || null,
+      y: pointData[1] || null,
+    }
+  }
+
+  function refreshContent() {
+    const firstPoint = document.querySelector('#input-from').value.split(' ');
+    const secondPoint = document.querySelector('#input-to').value.split(' ');
+    const chestsValue = document.querySelector('#input-chests').value;
+    let distanceValue = 0;
+
+    if (state.mode === DISTANCE_KNOWN) {
+      const valueFromInput = document.querySelector('#input-blocks').value
+
+      distanceValue = valueFromInput > 50 ? valueFromInput : 50;
+    } else {
+      distanceValue = calculateDistance(createPoint(firstPoint), createPoint(secondPoint));
+    }
+    
+    const price = Math.floor(((distanceValue / 50) * 4) * Math.ceil(chestsValue / 4));
+
+    document.querySelector('#input-price').value = isNaN(price) ? "Введите корректные данные" : price + " железных самородков";
+  }
+</script>
+
+</html>

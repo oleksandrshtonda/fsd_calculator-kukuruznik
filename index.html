@@ -116,15 +116,6 @@
       >
     </div>
 
-    <p>Количество сундуков</p>
-    <input
-      class="calculator__input"
-      id="input-chests"
-      type="number"
-      placeholder="Количество сундуков"
-      onkeyup="refreshContent()"
-    >
-
     <p>Цена</p>
     <input class="calculator__input" id="input-price" type="text" readonly placeholder="Тут цена">
   </div>
@@ -153,7 +144,6 @@
 
     document.querySelector('#input-from').value = '';
     document.querySelector('#input-to').value = '';
-    document.querySelector('#input-chests').value = '';
     document.querySelector('#input-blocks').value = '';
     document.querySelector('#input-price').value = '0 железных самородков'
 
@@ -176,26 +166,32 @@
 
   function createPoint(pointData) {
     return {
-      x: pointData[0] || null,
-      y: pointData[1] || null,
+      x: pointData[0],
+      y: pointData[1],
     }
   }
 
   function refreshContent() {
     const firstPoint = document.querySelector('#input-from').value.split(' ');
     const secondPoint = document.querySelector('#input-to').value.split(' ');
-    const chestsValue = document.querySelector('#input-chests').value;
     let distanceValue = 0;
 
     if (state.mode === DISTANCE_KNOWN) {
-      const valueFromInput = document.querySelector('#input-blocks').value
+      const valueFromInput = +document.querySelector('#input-blocks').value;
+      console.log(valueFromInput)
 
       distanceValue = valueFromInput > 50 ? valueFromInput : 50;
     } else {
       distanceValue = calculateDistance(createPoint(firstPoint), createPoint(secondPoint));
     }
     
-    const price = Math.floor(((distanceValue / 50) * 4) * Math.ceil(chestsValue / 4));
+    const price = Math.floor((distanceValue / 50) * 2);
+
+    if (state.mode != DISTANCE_KNOWN && firstPoint.length + secondPoint.length < 4) {
+      document.querySelector('#input-price').value = "Введите корректные данные";
+
+      return;
+    }
 
     document.querySelector('#input-price').value = isNaN(price) ? "Введите корректные данные" : price + " железных самородков";
   }
